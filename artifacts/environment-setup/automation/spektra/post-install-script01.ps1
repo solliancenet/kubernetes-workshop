@@ -688,6 +688,13 @@ Connect-AzAccount -Credential $cred | Out-Null
 #install sql server cmdlets
 Install-Module -Name SqlServer
 
+#WSL
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart
+#wsl --set-default-version 2
+
+
 # Template deployment
 $rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-fabmedical" };
 $resourceGroupName = $rg.ResourceGroupName
@@ -701,6 +708,8 @@ $global:ropcBodyPowerBI = "$($ropcBodyCore)&scope=https://analysis.windows.net/p
 $global:ropcBodyDevOps = "$($ropcBodyCore)&scope=https://app.vssps.visualstudio.com/.default"
 
 git clone https://github.com/solliancenet/microservices-workshop.git
+
+git clone https://github.com/robrich/kubernetes-hands-on-workshop.git
 
 #add helper files...
 . "C:\LabFiles\microservices-workshop\artifacts\environment-setup\automation\HttpHelper.ps1"
@@ -781,92 +790,13 @@ git config --global user.email $AzureUserName
 git config --global user.name "Spektra User"
 git config --global credential.helper wincred
 
-#need to wait until devops is showing up...
-
 $username = $azureusername.split("@")[0];
 
-LoginDevOps $azureUsername $azurePassword;
-
-$projectName = "fabmedical";
-
-$item = Get-Content -Raw -Path "$($TemplatesPath)/serviceconnection_arm.json"
-$item = $item.Replace("#ID#", "-1");
-$item = $item.Replace("#NAME#", "azurecloud")
-$item = $item.Replace("#SPN_ID#", $appId)
-$item = $item.Replace("#SPN_SECRET#", $secret)
-$item = $item.Replace("#TENANT_ID#", $tenantId)
-$item = $item.Replace("#SUBSCRIPTION_ID#", $subscriptionid)
-$item = $item.Replace("#SUBSCRIPTION_NAME#", $subscriptionName)
-$jsonItem = ConvertFrom-Json $item
-$item = ConvertTo-Json $jsonItem -Depth 100
-
-CreateARMServiceConnection $orgname "azurecloud" $item $spnId $spnSecret $tenantId $subscriptionId $subscriptionName $projectName
-
 $acrname = "fabmedical$deploymentId";
-
-$item = Get-Content -Raw -Path "$($TemplatesPath)/serviceconnection_aci.json"
-$item = $item.Replace("#ID#", "-1");
-$item = $item.Replace("#NAME#", "Fabmedical ACR")
-$item = $item.Replace("#ACR_SERVER#", $acrname)
-$item = $item.Replace("#RESOURCE_GROUP#", $resourceGroupName)
-$item = $item.Replace("#SPN_ID#", $appId)
-$item = $item.Replace("#SPN_SECRET#", $azurePassword)
-$item = $item.Replace("#TENANT_ID#", $tenantId)
-$item = $item.Replace("#SUBSCRIPTION_ID#", $subscriptionid)
-$item = $item.Replace("#SUBSCRIPTION_NAME#", $subscriptionName)
-$jsonItem = ConvertFrom-Json $item
-$item = ConvertTo-Json $jsonItem -Depth 100
-
-CreateARMServiceConnection $orgname "Fabmedical ACR" $item $spnId $spnSecret $tenantId $subscriptionId $subscriptionName $projectName
-
-$repoWeb = CreateDevOpsRepos $orgname $projectName "content-web";
-$repoApi = CreateDevOpsRepos $orgname $projectName "content-api";
-$repoInit = CreateDevOpsRepos $orgname $projectName "content-init";
-
-$repoNames = @("content-web","content-api","content-init");
-
-$repos = GetDevOpsRepos $orgName $projectName;
-
-$token = Get-Content "devopstoken" -ea silentlycontinue;
-
-if (!$token)
-{
-    $token = CreateRepoToken $orgname $projectName;
-    Set-content "devopstoken" $token;
-}
-
-#this allows us to get it back out later much more easily in cloud shell.
-$line = "https://$($username):$($token)@dev.azure.com/fabmedical-$($deploymentId)/fabmedical/_git/"
-set-content "devopstokenurl" $line;
-$storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName -Name "fabmedical$($deploymentId)diag"
-$ctx = $storageAccount.Context
-New-AzStorageContainer -Name "devops" -Context $ctx
-Set-AzStorageBlobContent -File "devopstokenurl" -Container "devops" -Blob "devopstoken" -Context $ctx 
-
-foreach($name in $repoNames)
-{
-    $repo = $repos | where {$_.Name -eq $name};
-
-    cd "C:\labfiles\microservices-workshop\artifacts\$name"
-    
-    git init
-    git add .
-    git commit -m "Initial Commit"
-    $url = $repo.remoteurl
-    $url = "https://$($username):$($token)@dev.azure.com/fabmedical-$($deploymentId)/fabmedical/_git/$name";
-    git remote add origin $url;
-    git push -u origin --all
-}
-
-#load cosmosdb
-LoadCosmosDb;
 
 #set the ip DNS name for ingress steps.
 $ipAddress = Get-AzPublicIpAddress -resourcegroup $resourcegroupname
 $ip = $ipAddress.IpAddress;
-
-$ipAddress.DnsSettings.DomainNameLabel = "fabmedical-$deploymentId-ingress"
-Set-AzPublicIpAddress -PublicIpAddress $ipAddress
 
 #inital login...
 $script = "";
