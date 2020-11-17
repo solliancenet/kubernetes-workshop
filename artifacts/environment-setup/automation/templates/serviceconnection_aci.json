@@ -1,0 +1,24 @@
+{
+  "authorization": {
+      "scheme": "ServicePrincipal",
+      "parameters": {
+          "loginServer": "#ACR_SERVER#.azurecr.io",
+          "servicePrincipalId": "#SPN_ID#",
+          "tenantId": "#TENANT_ID#",
+          "serviceprincipalkey": "#SPN_SECRET#"
+      }
+  },
+  "description": "#NAME#",
+  "name": "#NAME#",
+  "type": "dockerregistry",
+  "url": "https://#ACR_SERVER#.azurecr.io",
+  "isShared": false,
+  "owner": "library",
+  "data": {
+      "registryId": "/subscriptions/#SUBSCRIPTION_ID#/resourceGroups/#RESOURCE_GROUP#/providers/Microsoft.ContainerRegistry/registries/#ACR_SERVER#",
+      "registrytype": "ACR",
+      "spnObjectId": "",
+      "subscriptionId": "#SUBSCRIPTION_ID#",
+      "subscriptionName": "#SUBSCRIPTION_NAME#"
+  }
+}
