@@ -582,10 +582,14 @@ function InstallUbuntu()
 {
     $Path = $env:TEMP;
     Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1604 -OutFile "$path/Ubuntu.appx" -UseBasicParsing
-    Add-AppxPackage "$path\Ubuntu.appx"
+
+    powershell.exe -c "$user='$username'; $pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu.appx`" }"
 
     Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1804 -OutFile "$path/Ubuntu.appx" -UseBasicParsing
-    Add-AppxPackage "$path\Ubuntu.appx"
+
+    powershell.exe -c "$user='$username'; $pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu.appx`" }"
+    
+    #Add-AppxPackage "$path\Ubuntu.appx"
 }
 
 function InstallChrome()
@@ -613,6 +617,8 @@ function InstallDockerDesktop()
     $argList = "install --quiet"
     start-process "$productPath\$productExec" -ArgumentList $argList -wait
 
+    Add-LocalGroupMember -Group "docker-users" -Member "adminfabmedical"
+
     #enable kubernets mode
     $file = "C:\Users\adminfabmedical\AppData\Roaming\Docker\settings.json";
     $data = get-content $file -raw;
@@ -624,6 +630,7 @@ function InstallDockerDesktop()
 function InstallWSL2
 {
     mkdir c:\temp -ea silentlycontinue
+    cd c:\temp
     
     $downloadNotePad = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi";
 
@@ -659,6 +666,9 @@ function InstallDocker()
 
 function UpdateVisualStudio($edition)
 {
+    mkdir c:\temp -ea silentlycontinue
+    cd c:\temp
+    
     Write-Host "Update Visual Studio." -ForegroundColor Yellow
 
     $Edition = 'Enterprise';
@@ -676,7 +686,9 @@ function UpdateVisualStudio($edition)
     $WebClient = New-Object System.Net.WebClient
     $WebClient.DownloadFile($bootstrapperUri,$bootstrapper)
 
-    & $bootstrapper update --quiet
+    #& $bootstrapper update --quiet
+
+    Start-Process $bootstrapper -Wait -ArgumentList 'update --quiet'
 
     #update visual studio installer
     #& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update --quiet
@@ -685,6 +697,8 @@ function UpdateVisualStudio($edition)
     #& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update  --quiet --norestart --installPath 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise'
 
     #& $bootstrapper update  --quiet --norestart --installPath 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise'
+
+    Start-Process $bootstrapper -Wait -ArgumentList "update --quiet --norestart --installPath 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise'"
 }
 
 #Disable-InternetExplorerESC
@@ -814,12 +828,6 @@ InstallDockerDesktop
 
 InstallWSL2
 
-InstallUbuntu
-
-InstallVisualStudio "enterprise"
-
-UpdateVisualStudio "enterprise"
-
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
 cd "c:\labfiles";
@@ -833,10 +841,17 @@ $password = $AzurePassword                # READ FROM FILE
 $clientId = $TokenGeneratorClientId       # READ FROM FILE
 $global:sqlPassword = $AzureSQLPassword          # READ FROM FILE
 
-Uninstall-AzureRm
-
 $securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
 $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $SecurePassword
+
+InstallUbuntu
+
+InstallVisualStudio "enterprise"
+
+UpdateVisualStudio "enterprise"
+
+Uninstall-AzureRm
+
 
 Connect-AzAccount -Credential $cred | Out-Null
 
