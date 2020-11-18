@@ -580,6 +580,8 @@ function InstallNotepadPP()
 
 function InstallUbuntu()
 {
+    write-host "Installing Ubuntu";
+
     winrm quickconfig -force
 
     $Path = $env:TEMP;
@@ -596,6 +598,8 @@ function InstallUbuntu()
 
 function InstallChrome()
 {
+    write-host "Installing Chrome";
+
     $Path = $env:TEMP; 
     $Installer = "chrome_installer.exe"; 
     Invoke-WebRequest "http://dl.google.com/chrome/install/375.126/chrome_installer.exe" -OutFile $Path\$Installer; 
@@ -605,6 +609,8 @@ function InstallChrome()
 
 function InstallDockerDesktop()
 {
+    write-host "Installing Docker Desktop";
+
     mkdir c:\temp -ea silentlycontinue
     #Docker%20Desktop%20Installer.exe install --quiet
 
@@ -648,6 +654,8 @@ function InstallWSL2
 
 function InstallVisualStudio()
 {
+    write-host "Installing Visual Studio";
+
     # Install Chocolatey
     if (!(Get-Command choco.exe -ErrorAction SilentlyContinue)) {
         Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))}
@@ -661,6 +669,8 @@ function InstallVisualStudio()
 
 function InstallDocker()
 {
+    write-host "Installing WSL";
+
     dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
     
     dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
@@ -824,9 +834,9 @@ InstallNotepadPP
 
 InstallAzPowerShellModule
 
-InstallWSL2
-
 InstallDocker
+
+InstallWSL2
 
 InstallDockerDesktop
 
@@ -854,14 +864,13 @@ UpdateVisualStudio "enterprise"
 
 Uninstall-AzureRm
 
-
 Connect-AzAccount -Credential $cred | Out-Null
 
 #install sql server cmdlets
 Install-Module -Name SqlServer
 
 # Template deployment
-$rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-fabmedical" };
+$rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-02" };
 $resourceGroupName = $rg.ResourceGroupName
 $deploymentId =  (Get-AzResourceGroup -Name $resourceGroupName).Tags["DeploymentId"]
 
@@ -877,7 +886,7 @@ git clone https://github.com/solliancenet/microservices-workshop.git
 git clone https://github.com/robrich/kubernetes-hands-on-workshop.git
 
 #add helper files...
-. "C:\LabFiles\microservices-workshop\artifacts\environment-setup\automation\HttpHelper.ps1"
+. "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\HttpHelper.ps1"
 
 remove-item microservices-workshop/.git -Recurse -force -ea SilentlyContinue
 
