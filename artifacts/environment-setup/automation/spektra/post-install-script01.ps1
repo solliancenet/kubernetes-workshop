@@ -578,6 +578,73 @@ function InstallNotepadPP()
 	}
 }
 
+function InstallChrome()
+{
+    $Path = $env:TEMP; 
+    $Installer = "chrome_installer.exe"; 
+    Invoke-WebRequest "http://dl.google.com/chrome/install/375.126/chrome_installer.exe" -OutFile $Path\$Installer; 
+    Start-Process -FilePath $Path\$Installer -Args "/silent /install" -Verb RunAs -Wait; 
+    Remove-Item $Path\$Installer
+}
+
+function InstallDockerDesktop()
+{
+    mkdir c:\temp -ea silentlycontinue
+    #Docker%20Desktop%20Installer.exe install --quiet
+
+    $downloadNotePad = "https://desktop.docker.com/win/stable/Docker%20Desktop%20Installer.exe";
+
+    #download it...		
+    Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "c:\temp\dockerdesktop.exe"
+    
+    #install it...
+    $productPath = "c:\temp";				
+    $productExec = "dockerdesktop.exe"	
+    $argList = "install --quiet"
+    start-process "$productPath\$productExec" -ArgumentList $argList -wait
+}
+
+function InstallWSL2
+{
+    mkdir c:\temp -ea silentlycontinue
+    
+    $downloadNotePad = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi";
+
+    #download it...		
+    Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "wsl_update_x64.msi"
+
+    Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet'
+}
+
+function InstallVisualStudio()
+{
+    # Install Chocolatey
+    if (!(Get-Command choco.exe -ErrorAction SilentlyContinue)) {
+        Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))}
+        
+        # Install Visual Studio 2019 Community version
+        #choco install visualstudio2019community -y
+
+        # Install Visual Studio 2019 Enterprise version
+        choco install visualstudio2019enterprise -y
+}
+
+function InstallDocker()
+{
+    dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+    
+    dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+}
+
+function UpdateVisualStudio()
+{
+    #update visual studio installer
+    & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update --quiet
+
+    #update visual studio
+    & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update  --quiet --norestart --installPath 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise'
+}
+
 #Disable-InternetExplorerESC
 function DisableInternetExplorerESC
 {
@@ -661,9 +728,19 @@ CreateLabFilesDirectory
 
 InstallPutty
 
+InstallChrome
+
 InstallNotepadPP
 
 InstallAzPowerShellModule
+
+InstallVisualStudio "enterprise"
+
+UpdateVisualStudio "enterprise"
+
+InstallDockerDesktop
+
+InstallWSL2
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
@@ -693,7 +770,6 @@ dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /nores
 
 Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart
 #wsl --set-default-version 2
-
 
 # Template deployment
 $rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-fabmedical" };
