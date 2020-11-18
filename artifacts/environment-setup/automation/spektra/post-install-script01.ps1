@@ -578,6 +578,16 @@ function InstallNotepadPP()
 	}
 }
 
+function InstallUbuntu()
+{
+    $Path = $env:TEMP;
+    Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1604 -OutFile "$path/Ubuntu.appx" -UseBasicParsing
+    Add-AppxPackage "$path\Ubuntu.appx"
+
+    Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1804 -OutFile "$path/Ubuntu.appx" -UseBasicParsing
+    Add-AppxPackage "$path\Ubuntu.appx"
+}
+
 function InstallChrome()
 {
     $Path = $env:TEMP; 
@@ -602,6 +612,13 @@ function InstallDockerDesktop()
     $productExec = "dockerdesktop.exe"	
     $argList = "install --quiet"
     start-process "$productPath\$productExec" -ArgumentList $argList -wait
+
+    #enable kubernets mode
+    $file = "C:\Users\adminfabmedical\AppData\Roaming\Docker\settings.json";
+    $data = get-content $file -raw;
+    $json = ConvertFrom-Json $data;
+    $json.kubernetesEnabled = $true;
+    set-content $file $json;
 }
 
 function InstallWSL2
@@ -614,6 +631,10 @@ function InstallWSL2
     Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "wsl_update_x64.msi"
 
     Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet'
+
+    wsl --set-default-version 2
+    wsl --set-version Ubuntu 2
+    wsl --list -v
 }
 
 function InstallVisualStudio()
@@ -787,15 +808,15 @@ InstallNotepadPP
 
 InstallAzPowerShellModule
 
-InstallVisualStudio "enterprise"
-
-UpdateVisualStudio "enterprise"
-
 InstallDocker
 
 InstallDockerDesktop
 
 InstallWSL2
+
+InstallVisualStudio "enterprise"
+
+UpdateVisualStudio "enterprise"
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
