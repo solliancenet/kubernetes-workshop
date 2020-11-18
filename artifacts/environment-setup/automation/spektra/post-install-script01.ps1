@@ -687,6 +687,30 @@ function EnableIEFileDownload
   Set-ItemProperty -Path $HKCU -Name "1604" -Value 0 -ErrorAction SilentlyContinue -Verbose
 }
 
+function InstallGit()
+{
+  #download and install git...		
+  $output = "$env:TEMP\git.exe";
+  Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.27.0.windows.1/Git-2.27.0-64-bit.exe -OutFile $output; 
+
+  $productPath = "$env:TEMP";
+  $productExec = "git.exe"	
+  $argList = "/SILENT"
+  start-process "$productPath\$productExec" -ArgumentList $argList -wait
+
+}
+
+function InstallAzureCli()
+{
+  Write-Host "Install Azure CLI." -ForegroundColor Yellow
+
+  #install azure cli
+  Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; 
+  Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; 
+  rm .\AzureCLI.msi
+}
+
+
 #Create InstallAzPowerShellModule
 function InstallAzPowerShellModule
 {
@@ -741,6 +765,10 @@ Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -
 [Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls" 
 
+mkdir c:\temp -ea silentlycontinue
+
+cd c:\temp
+
 DisableInternetExplorerESC
 
 EnableIEFileDownload
@@ -748,6 +776,10 @@ EnableIEFileDownload
 CreateLabFilesDirectory
 
 InstallPutty
+
+InstallGit
+
+InstallAzureCli
 
 InstallChrome
 
@@ -785,12 +817,6 @@ Connect-AzAccount -Credential $cred | Out-Null
 
 #install sql server cmdlets
 Install-Module -Name SqlServer
-
-#WSL
-dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-
-Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart
-#wsl --set-default-version 2
 
 # Template deployment
 $rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-fabmedical" };
