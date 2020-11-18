@@ -636,13 +636,34 @@ function InstallDocker()
     dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
 }
 
-function UpdateVisualStudio()
+function UpdateVisualStudio($edition)
 {
+    Write-Host "Update Visual Studio." -ForegroundColor Yellow
+
+    $Edition = 'Enterprise';
+    $Channel = 'Release';
+    $channelUri = "https://aka.ms/vs/16/release";
+    $responseFileName = "vs";
+ 
+    $bootstrapper = "$intermedateDir\vs_$edition.exe"
+    $responseFile = "$PSScriptRoot\$responseFileName.json"
+    $channelId = (Get-Content $responseFile | ConvertFrom-Json).channelId
+    
+    $bootstrapperUri = "$channelUri/vs_$($Edition.ToLowerInvariant()).exe"
+    Write-Host "Downloading Visual Studio 2019 $Edition ($Channel) bootstrapper from $bootstrapperUri"
+
+    $WebClient = New-Object System.Net.WebClient
+    $WebClient.DownloadFile($bootstrapperUri,$bootstrapper)
+
+    & $bootstrapper update --quiet
+
     #update visual studio installer
-    & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update --quiet
+    #& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update --quiet
 
     #update visual studio
-    & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update  --quiet --norestart --installPath 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise'
+    #& "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" update  --quiet --norestart --installPath 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise'
+
+    #& $bootstrapper update  --quiet --norestart --installPath 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise'
 }
 
 #Disable-InternetExplorerESC
