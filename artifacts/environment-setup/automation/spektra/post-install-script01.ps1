@@ -580,14 +580,16 @@ function InstallNotepadPP()
 
 function InstallUbuntu()
 {
+    winrm quickconfig -force
+
     $Path = $env:TEMP;
     Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1604 -OutFile "$path/Ubuntu.appx" -UseBasicParsing
 
-    powershell.exe -c "$user='$username'; $pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu.appx`" }"
+    powershell.exe -c "`$user='$username'; `$pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu.appx`" } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
 
     Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1804 -OutFile "$path/Ubuntu.appx" -UseBasicParsing
 
-    powershell.exe -c "$user='$username'; $pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu.appx`" }"
+    powershell.exe -c "`$user='$username'; `$pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu.appx`" } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
     
     #Add-AppxPackage "$path\Ubuntu.appx"
 }
@@ -822,11 +824,11 @@ InstallNotepadPP
 
 InstallAzPowerShellModule
 
+InstallWSL2
+
 InstallDocker
 
 InstallDockerDesktop
-
-InstallWSL2
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
