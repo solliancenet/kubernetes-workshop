@@ -814,6 +814,8 @@ InstallDockerDesktop
 
 InstallWSL2
 
+InstallUbuntu
+
 InstallVisualStudio "enterprise"
 
 UpdateVisualStudio "enterprise"
