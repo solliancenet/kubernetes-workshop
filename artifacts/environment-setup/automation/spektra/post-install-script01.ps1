@@ -791,6 +791,8 @@ InstallVisualStudio "enterprise"
 
 UpdateVisualStudio "enterprise"
 
+InstallDocker
+
 InstallDockerDesktop
 
 InstallWSL2
