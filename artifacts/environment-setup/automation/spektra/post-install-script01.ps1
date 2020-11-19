@@ -747,8 +747,10 @@ function EnableIEFileDownload
 
 function InstallGit()
 {
+    
     Write-Host "Installing Git" -ForegroundColor Yellow
 
+    <#
     #download and install git...		
     $output = "c:\temp\git.exe";
     Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.27.0.windows.1/Git-2.27.0-64-bit.exe -OutFile $output; 
@@ -757,6 +759,7 @@ function InstallGit()
     $productExec = "git.exe"	
     $argList = "/SILENT"
     start-process "$productPath\$productExec" -ArgumentList $argList -wait
+    #>
 
     choco install git.install
 
@@ -843,7 +846,19 @@ mkdir c:\temp -ea silentlycontinue
 
 cd c:\temp
 
+cd "c:\labfiles";
 
+CreateCredFile $azureUsername $azurePassword $azureTenantID $azureSubscriptionID $deploymentId $odlId
+
+. C:\LabFiles\AzureCreds.ps1
+
+$userName = $AzureUserName                # READ FROM FILE
+$password = $AzurePassword                # READ FROM FILE
+$clientId = $TokenGeneratorClientId       # READ FROM FILE
+$global:sqlPassword = $AzureSQLPassword          # READ FROM FILE
+
+$securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
+$cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $SecurePassword
 
 DisableInternetExplorerESC
 
@@ -871,27 +886,13 @@ InstallWSL2
 
 InstallDockerDesktop
 
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
-
-cd "c:\labfiles";
-
-CreateCredFile $azureUsername $azurePassword $azureTenantID $azureSubscriptionID $deploymentId $odlId
-
-. C:\LabFiles\AzureCreds.ps1
-
-$userName = $AzureUserName                # READ FROM FILE
-$password = $AzurePassword                # READ FROM FILE
-$clientId = $TokenGeneratorClientId       # READ FROM FILE
-$global:sqlPassword = $AzureSQLPassword          # READ FROM FILE
-
-$securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
-$cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $SecurePassword
-
 InstallUbuntu
 
 InstallVisualStudio "enterprise"
 
 UpdateVisualStudio "enterprise"
+
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
 Uninstall-AzureRm
 
