@@ -600,7 +600,7 @@ function InstallChrome()
 {
     write-host "Installing Chrome";
 
-    $Path = $env:TEMP; 
+    $Path = "c:\temp"; 
     $Installer = "chrome_installer.exe"; 
     Invoke-WebRequest "http://dl.google.com/chrome/install/375.126/chrome_installer.exe" -OutFile $Path\$Installer; 
     Start-Process -FilePath $Path\$Installer -Args "/silent /install" -Verb RunAs -Wait; 
@@ -623,16 +623,21 @@ function InstallDockerDesktop()
     $productPath = "c:\temp";				
     $productExec = "dockerdesktop.exe"	
     $argList = "install --quiet"
-    start-process "$productPath\$productExec" -ArgumentList $argList -wait
+
+    $credentials = New-Object System.Management.Automation.PSCredential -ArgumentList @($username,(ConvertTo-SecureString -String $password -AsPlainText -Force))
+
+    start-process "$productPath\$productExec" -ArgumentList $argList -wait -Credential $credentials
 
     Add-LocalGroupMember -Group "docker-users" -Member "adminfabmedical"
 
     #enable kubernets mode
+    <#
     $file = "C:\Users\adminfabmedical\AppData\Roaming\Docker\settings.json";
     $data = get-content $file -raw;
     $json = ConvertFrom-Json $data;
     $json.kubernetesEnabled = $true;
     set-content $file $json;
+    #>
 }
 
 function InstallWSL2
@@ -647,7 +652,9 @@ function InstallWSL2
     #download it...		
     Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "wsl_update_x64.msi"
 
-    Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet'
+    $credentials = New-Object System.Management.Automation.PSCredential -ArgumentList @($username,(ConvertTo-SecureString -String $password -AsPlainText -Force))
+
+    Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet' -Credential $credentials
 
     wsl --set-default-version 2
     wsl --set-version Ubuntu 2
