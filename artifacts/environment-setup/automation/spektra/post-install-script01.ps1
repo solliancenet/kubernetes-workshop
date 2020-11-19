@@ -703,8 +703,8 @@ function UpdateVisualStudio($edition)
  
     $intermedateDir = "c:\temp";
     $bootstrapper = "$intermedateDir\vs_$edition.exe"
-    $responseFile = "$PSScriptRoot\$responseFileName.json"
-    $channelId = (Get-Content $responseFile | ConvertFrom-Json).channelId
+    #$responseFile = "$PSScriptRoot\$responseFileName.json"
+    #$channelId = (Get-Content $responseFile | ConvertFrom-Json).channelId
     
     $bootstrapperUri = "$channelUri/vs_$($Edition.ToLowerInvariant()).exe"
     Write-Host "Downloading Visual Studio 2019 $Edition ($Channel) bootstrapper from $bootstrapperUri"
@@ -857,10 +857,10 @@ CreateCredFile $azureUsername $azurePassword $azureTenantID $azureSubscriptionID
 . C:\LabFiles\AzureCreds.ps1
 
 $userName = $AzureUserName                # READ FROM FILE
-$password = $AzurePassword                # READ FROM FILE
+$global:password = $AzurePassword                # READ FROM FILE
 $clientId = $TokenGeneratorClientId       # READ FROM FILE
 $global:sqlPassword = $AzureSQLPassword          # READ FROM FILE
-$localusername = "wsuser";
+$global:localusername = "wsuser";
 
 $securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
 $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $SecurePassword
@@ -916,6 +916,8 @@ $global:ropcBodySynapseSQL = "$($ropcBodyCore)&scope=https://sql.azuresynapse.ne
 $global:ropcBodyPowerBI = "$($ropcBodyCore)&scope=https://analysis.windows.net/powerbi/api/.default"
 $global:ropcBodyDevOps = "$($ropcBodyCore)&scope=https://app.vssps.visualstudio.com/.default"
 
+cd c:\labfiles
+
 git clone https://github.com/solliancenet/kubernetes-workshop.git
 
 git clone https://github.com/robrich/kubernetes-hands-on-workshop.git
@@ -923,7 +925,7 @@ git clone https://github.com/robrich/kubernetes-hands-on-workshop.git
 #add helper files...
 . "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\HttpHelper.ps1"
 
-remove-item microservices-workshop/.git -Recurse -force -ea SilentlyContinue
+remove-item kubernetes-workshop/.git -Recurse -force -ea SilentlyContinue
 
 $publicKey = get-content "./.ssh/fabmedical.pub" -ea SilentlyContinue;
 
