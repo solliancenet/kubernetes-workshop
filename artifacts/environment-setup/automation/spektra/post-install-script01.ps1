@@ -701,6 +701,7 @@ function UpdateVisualStudio($edition)
     $channelUri = "https://aka.ms/vs/16/release";
     $responseFileName = "vs";
  
+    $intermedateDir = "c:\temp";
     $bootstrapper = "$intermedateDir\vs_$edition.exe"
     $responseFile = "$PSScriptRoot\$responseFileName.json"
     $channelId = (Get-Content $responseFile | ConvertFrom-Json).channelId
@@ -915,7 +916,7 @@ $global:ropcBodySynapseSQL = "$($ropcBodyCore)&scope=https://sql.azuresynapse.ne
 $global:ropcBodyPowerBI = "$($ropcBodyCore)&scope=https://analysis.windows.net/powerbi/api/.default"
 $global:ropcBodyDevOps = "$($ropcBodyCore)&scope=https://app.vssps.visualstudio.com/.default"
 
-git clone https://github.com/solliancenet/microservices-workshop.git
+git clone https://github.com/solliancenet/kubernetes-workshop.git
 
 git clone https://github.com/robrich/kubernetes-hands-on-workshop.git
 
