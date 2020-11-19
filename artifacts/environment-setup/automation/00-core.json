@@ -123,7 +123,7 @@
           "registrySku": "Standard",
           "registryAdminUserEnabled": true,
           "kubernetesClusterName": "[concat('fabmedical-', parameters('Suffix'))]",
-          "kubernetesVersion": "1.16.10",
+          "kubernetesVersion": "1.17.11",
           "kubernetesDnsPrefix": "[concat('fabmedical-', parameters('Suffix'), '-dns')]",
           "kubernetesAgentOsType": "Linux",
           "kubernetesAgentOsDiskSizeGB": 0,
@@ -156,19 +156,6 @@
             }
         },
         {
-          "type": "Microsoft.VisualStudio/account",
-          "apiVersion": "2014-02-26",
-          "name": "[variables('orgName')]",
-          "location": "centralus",
-          "dependsOn": [],
-          "tags": {},
-          "properties": {
-              "operationType": "Create",
-              "accountName": "[variables('orgName')]"
-          },
-          "resources": []
-      },
-      {
           "name": "[variables('virtualNetworkName')]",
           "type": "Microsoft.Network/virtualNetworks",
           "apiVersion": "2019-02-01",
