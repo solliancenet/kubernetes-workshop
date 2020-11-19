@@ -565,7 +565,7 @@ function InstallNotepadPP()
 	{
 		$downloadNotePad = "https://notepad-plus-plus.org/repository/7.x/7.5.4/npp.7.5.4.Installer.exe";
 
-    mkdir c:\temp -ea silentlycontinue   
+        mkdir c:\temp -ea silentlycontinue   
 		
 		#download it...		
 		Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "c:\temp\npp.exe"
@@ -584,7 +584,7 @@ function InstallUbuntu()
 
     winrm quickconfig -force
 
-    $Path = $env:TEMP;
+    $Path = "c:/temp";
     Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1604 -OutFile "$path/Ubuntu.appx" -UseBasicParsing
 
     powershell.exe -c "`$user='$username'; `$pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu.appx`" } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
@@ -743,15 +743,17 @@ function InstallGit()
     Write-Host "Installing Git" -ForegroundColor Yellow
 
     #download and install git...		
-    $output = "$env:TEMP\git.exe";
+    $output = "c:\temp\git.exe";
     Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.27.0.windows.1/Git-2.27.0-64-bit.exe -OutFile $output; 
 
-    $productPath = "$env:TEMP";
+    $productPath = "c:\temp";
     $productExec = "git.exe"	
     $argList = "/SILENT"
     start-process "$productPath\$productExec" -ArgumentList $argList -wait
 
     choco install git.install
+
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 }
 
 function InstallAzureCli()
@@ -833,6 +835,8 @@ Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -
 mkdir c:\temp -ea silentlycontinue
 
 cd c:\temp
+
+
 
 DisableInternetExplorerESC
 
