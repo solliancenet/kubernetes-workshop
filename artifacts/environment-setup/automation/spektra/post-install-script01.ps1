@@ -686,7 +686,7 @@ function InstallVisualStudio()
         choco install visualstudio2019enterprise -y
 }
 
-function InstallDocker()
+function InstallWSL()
 {
     write-host "Installing WSL";
 
@@ -891,7 +891,7 @@ InstallNotepadPP
 
 InstallAzPowerShellModule
 
-InstallDocker
+InstallWSL
 
 InstallWSL2
 
