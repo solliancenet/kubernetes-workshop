@@ -637,6 +637,8 @@ function InstallDockerDesktop()
 
 function InstallWSL2
 {
+    write-host "Installing WSL2";
+
     mkdir c:\temp -ea silentlycontinue
     cd c:\temp
     
@@ -674,6 +676,8 @@ function InstallDocker()
     dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
     
     dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 }
 
 function UpdateVisualStudio($edition)
@@ -736,15 +740,16 @@ function EnableIEFileDownload
 
 function InstallGit()
 {
-  #download and install git...		
-  $output = "$env:TEMP\git.exe";
-  Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.27.0.windows.1/Git-2.27.0-64-bit.exe -OutFile $output; 
+    Write-Host "Installing Git" -ForegroundColor Yellow
 
-  $productPath = "$env:TEMP";
-  $productExec = "git.exe"	
-  $argList = "/SILENT"
-  start-process "$productPath\$productExec" -ArgumentList $argList -wait
+    #download and install git...		
+    $output = "$env:TEMP\git.exe";
+    Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.27.0.windows.1/Git-2.27.0-64-bit.exe -OutFile $output; 
 
+    $productPath = "$env:TEMP";
+    $productExec = "git.exe"	
+    $argList = "/SILENT"
+    start-process "$productPath\$productExec" -ArgumentList $argList -wait
 }
 
 function InstallAzureCli()
@@ -867,7 +872,7 @@ Uninstall-AzureRm
 Connect-AzAccount -Credential $cred | Out-Null
 
 #install sql server cmdlets
-Install-Module -Name SqlServer
+powershell.exe -c "`$user='$username'; `$pass='$password'; try { Invoke-Command -ScriptBlock { Install-Module -Name SqlServer -force } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
 
 # Template deployment
 $rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-02" };
@@ -926,9 +931,9 @@ if (!$sp)
 $objectId = $sp.Id;
 $orgName = "fabmedical-$deploymentId";
 
-$TemplatesPath = "c:\labfiles\microservices-workshop\artifacts\environment-setup\automation\templates"
-$templateFile = "c:\labfiles\microservices-workshop\artifacts\environment-setup\automation\00-core.json";
-$parametersFile = "c:\labfiles\microservices-workshop\artifacts\environment-setup\automation\spektra\deploy.parameters.post.json";
+$TemplatesPath = "c:\labfiles\kubernetes-workshop\artifacts\environment-setup\automation\templates"
+$templateFile = "c:\labfiles\kubernetes-workshop\artifacts\environment-setup\automation\00-core.json";
+$parametersFile = "c:\labfiles\kubernetes-workshop\artifacts\environment-setup\automation\spektra\deploy.parameters.post.json";
 $content = Get-Content -Path $parametersFile -raw;
 
 $content = $content.Replace("GET-AZUSER-PASSWORD",$azurepassword);
