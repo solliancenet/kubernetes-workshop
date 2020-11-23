@@ -24,6 +24,11 @@ function InstallMongoDriver()
     #TODO
 }
 
+function InstallVisualStudioCode()
+{
+    choco install vscode
+}
+
 function LoadCosmosDbViaMongo($cosmosConnection)
 {
     $databaseName = "contentdb";
@@ -899,11 +904,15 @@ InstallDockerDesktop
 
 InstallUbuntu
 
+InstallVisualStudioCode
+
 InstallVisualStudio "enterprise"
 
 UpdateVisualStudio "enterprise"
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f
 
 Uninstall-AzureRm
 
