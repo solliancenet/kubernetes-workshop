@@ -19,6 +19,26 @@ Param (
   $deploymentId
 )
 
+function CreateRebootTask($name, $scriptPath)
+{
+    $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument "-NoProfile -WindowStyle Hidden -file $scriptPath"
+    $trigger = New-ScheduledTaskTrigger -AtStartup
+    $taskname = $name;
+    
+    $params = @{
+        Action  = $action
+        Trigger = $trigger
+        TaskName = $taskname
+    }
+    
+    if(Get-ScheduledTask -TaskName $params.TaskName -EA SilentlyContinue) { 
+        Set-ScheduledTask @params
+        }
+    else {
+        Register-ScheduledTask @params
+    }
+}
+
 function InstallMongoDriver()
 {
     #TODO
@@ -668,7 +688,7 @@ function InstallWSL2
 
     $credentials = New-Object System.Management.Automation.PSCredential -ArgumentList @($localusername,(ConvertTo-SecureString -String $password -AsPlainText -Force))
 
-    Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet' -Credential $credentials
+    #Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet' -Credential $credentials
     Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet'
 
     wsl --set-default-version 2
@@ -913,6 +933,9 @@ UpdateVisualStudio "enterprise"
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
 reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f
+
+$scriptPath = "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.ps1"
+CreateRebootTask "Setup WSL" $scriptPath
 
 Uninstall-AzureRm
 
