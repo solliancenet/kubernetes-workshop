@@ -46,7 +46,9 @@ function InstallMongoDriver()
 
 function InstallVisualStudioCode()
 {
-    choco install vscode
+    write-host "Installing Visual Studio Code";
+
+    choco install vscode --ignoredetectedreboot
 }
 
 function LoadCosmosDbViaMongo($cosmosConnection)
@@ -679,7 +681,7 @@ function InstallDockerDesktop()
     start-process "$productPath\$productExec" -ArgumentList $argList -wait
     #>
 
-    choco install docker-desktop --pre
+    choco install docker-desktop --pre --ignoredetectedreboot
 
     Add-LocalGroupMember -Group "docker-users" -Member $localusername;
 
@@ -729,16 +731,24 @@ function InstallVisualStudio()
         #choco install visualstudio2019community -y
 
         # Install Visual Studio 2019 Enterprise version
-        choco install visualstudio2019enterprise -y
+        choco install visualstudio2019enterprise -y --ignoredetectedreboot
 }
 
 function InstallWSL()
 {
     write-host "Installing WSL";
 
-    dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+    $script = "dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart"
+
+    & $script
+
+    powershell.exe -c "`$user='$localusername'; `$pass='$password'; try { Invoke-Command -ScriptBlock { & $script } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
     
-    dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+    $script = "dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart"
+
+    & $script
+
+    powershell.exe -c "`$user='$localusername'; `$pass='$password'; try { Invoke-Command -ScriptBlock { & $script } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
 
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 }
@@ -804,7 +814,6 @@ function EnableIEFileDownload
 
 function InstallGit()
 {
-    
     Write-Host "Installing Git" -ForegroundColor Yellow
 
     <#
@@ -818,7 +827,7 @@ function InstallGit()
     start-process "$productPath\$productExec" -ArgumentList $argList -wait
     #>
 
-    choco install git.install
+    choco install git.install --ignoredetectedreboot
 
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 }
