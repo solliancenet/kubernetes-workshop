@@ -29,8 +29,8 @@ function CreateRebootTask($name, $scriptPath)
         Action  = $action
         Trigger = $trigger
         TaskName = $taskname
-        User = $localusername
-        Password = $password
+        User = $global:localusername
+        Password = $global:password
     }
     
     if(Get-ScheduledTask -TaskName $params.TaskName -EA SilentlyContinue) { 

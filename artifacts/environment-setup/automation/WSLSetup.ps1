@@ -6,6 +6,30 @@ function SetupWSL()
     wsl --list -v
 }
 
+function InstallWSL2
+{
+    write-host "Installing WSL2";
+
+    mkdir c:\temp -ea silentlycontinue
+    cd c:\temp
+    
+    $downloadNotePad = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi";
+
+    #download it...		
+    Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "wsl_update_x64.msi"
+
+    $credentials = New-Object System.Management.Automation.PSCredential -ArgumentList @($localusername,(ConvertTo-SecureString -String $password -AsPlainText -Force))
+
+    #Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet' -Credential $credentials
+    Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet'
+
+    <#
+    wsl --set-default-version 2
+    wsl --set-version Ubuntu 2
+    wsl --list -v
+    #>
+}
+
 function InstallUbuntu()
 {
     write-host "Installing Ubuntu (1604)";
@@ -27,7 +51,11 @@ function InstallUbuntu()
 
     $installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu2004.exe)[0].Directory.FullName + "\Ubuntu2004.exe"
     start-process $installCommand;
+
+    start-sleep 30
 }
+
+InstallWSL2
 
 InstallUbuntu
 
