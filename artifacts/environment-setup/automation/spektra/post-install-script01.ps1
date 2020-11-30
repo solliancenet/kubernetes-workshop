@@ -29,6 +29,8 @@ function CreateRebootTask($name, $scriptPath)
         Action  = $action
         Trigger = $trigger
         TaskName = $taskname
+        User = $localusername
+        Password = $password
     }
     
     if(Get-ScheduledTask -TaskName $params.TaskName -EA SilentlyContinue) { 
@@ -615,35 +617,22 @@ function InstallUbuntu()
 
     winrm quickconfig -force
 
+    write-host "Downloading Ubuntu (1604)";
+
     $Path = "c:/temp";
     Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1604 -OutFile "$path/Ubuntu1604.appx" -UseBasicParsing
 
     powershell.exe -c "`$user='$localusername'; `$pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu1604.appx`" } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
 
+    write-host "Downloading Ubuntu (1804)";
     Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-1804 -OutFile "$path/Ubuntu1804.appx" -UseBasicParsing
 
     powershell.exe -c "`$user='$localusername'; `$pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu1804.appx`" } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
 
+    write-host "Downloading Ubuntu (2004)";
     Invoke-WebRequest -Uri https://aka.ms/wsl-ubuntu-2004 -OutFile "$path/Ubuntu2004.appx" -UseBasicParsing
 
     powershell.exe -c "`$user='$localusername'; `$pass='$password'; try { Invoke-Command -ScriptBlock { Add-AppxPackage `"$path\Ubuntu2004.appx`" } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
-
-    Add-AppxProvisionedPackage -Online -PackagePath C:\temp\Ubuntu1604.appx -skiplicense
-
-    cd 'C:\Program Files\WindowsApps\'
-    $installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu1604.exe)[0].Directory.FullName
-    $installCommand += "\Ubuntu1604.exe"
-    & $installCommand;
-
-    Add-AppxProvisionedPackage -Online -PackagePath C:\temp\Ubuntu1804.appx -skiplicense
-
-    $installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu1804.exe)[0].Directory.FullName + "\Ubuntu1804.exe"
-    & $installCommand;
-
-    Add-AppxProvisionedPackage -Online -PackagePath C:\temp\Ubuntu2004.appx -skiplicense
-
-    $installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu2004.exe)[0].Directory.FullName + "\Ubuntu2004.exe"
-    & $installCommand;
 }
 
 function InstallChrome()
@@ -740,13 +729,13 @@ function InstallWSL()
 
     $script = "dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart"
 
-    & $script
+    #& $script
 
     powershell.exe -c "`$user='$localusername'; `$pass='$password'; try { Invoke-Command -ScriptBlock { & $script } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
     
     $script = "dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart"
 
-    & $script
+    #& $script
 
     powershell.exe -c "`$user='$localusername'; `$pass='$password'; try { Invoke-Command -ScriptBlock { & $script } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
 
@@ -1147,58 +1136,8 @@ ExecuteRemoteCommand $ip $azurepassword $script 5;
 $script = "git config --global credential.helper cache"
 ExecuteRemoteCommand $ip $azurepassword $script 5;
 
-foreach($repo in $repos)
-{
-  $name = $repo.name;
-  $script = "git clone https://$($username):$($token)@dev.azure.com/fabmedical-$($deploymentId)/fabmedical/_git/$name";
-  ExecuteRemoteCommand $ip $azurepassword $script 10;
-}
-
-#Exercise 1
-$script = "docker network create fabmedical";
-ExecuteRemoteCommand $ip $azurepassword $script 10;
-
-$script = "docker container run --name mongo --net fabmedical -p 27017:27017 -d mongo";
-ExecuteRemoteCommand $ip $azurepassword $script 30;
-
-$script = "`rcd`rcd content-init`rnpm install`rnodejs server.js";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rcd`rcd content-api`rnpm install`rnodejs server.js &";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rcd`rcd content-web`rnpm install`rng build";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rcd`rcd content-web`rsed -i 's/localhost/$ip/' app.js"
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rcd`rcd content-api`rsed -i 's/[SHORT_SUFFIX]/$deploymentId/' azure-pipelines.yml"
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rcd`rcd content-web`rnode ./app.js &";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rcd`rcd content-api`rdocker image build -t content-api .";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rcd`rcd content-web`rdocker image build -t content-web .";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
 $acrCreds = Get-AzContainerRegistryCredential -ResourceGroupName $resourceGroupName -Name $acrName
 $script = "`rdocker login $acrName.azurecr.io -u $($acrCreds.Username) -p $($acrCreds.Password)";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rdocker image tag content-web $acrName.azurecr.io/content-web";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rdocker image tag content-api $acrName.azurecr.io/content-api";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rdocker image push $acrName.azurecr.io/content-web";
-ExecuteRemoteCommand $ip $azurepassword $script 5;
-
-$script = "`rdocker image push $acrName.azurecr.io/content-api";
 ExecuteRemoteCommand $ip $azurepassword $script 5;
 
 $line = "echo y | plink.exe -t -ssh -l adminfabmedical -pw `"$password`" $ip";
@@ -1208,13 +1147,19 @@ $line = "echo y | plink.exe -t -ssh -l adminfabmedical -pw `"$password`" -m `"c:
 add-content "c:\labfiles\setup.bat" $line;
 
 #must do twice...
-& c:\labfiles\login.bat
-& c:\labfiles\login.bat
+Start-Process c:\labfiles\login.bat
+Start-sleep 10
+Stop-Process -Name "plink" -force;
+
+Start-Process c:\labfiles\login.bat
+Start-sleep 10
+Stop-Process -Name "plink" -force;
 
 #run the script...
-& c:\labfiles\setup.bat
+Start-Process c:\labfiles\setup.bat
 
-sleep 20
+#wait 10 minutes
+Start-sleep 600
 
 Stop-Transcript
 
