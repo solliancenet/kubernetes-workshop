@@ -21,7 +21,6 @@ Param (
 
 function AddDesktopShortcut($user, $path, $exec, $args)
 {
-    param ( [string]$SourceExe, [string]$ArgumentsToSourceExe, [string]$DestinationPath )
     $WshShell = New-Object -comObject WScript.Shell
     $Shortcut = $WshShell.CreateShortcut($path)
     $Shortcut.TargetPath = $exec
