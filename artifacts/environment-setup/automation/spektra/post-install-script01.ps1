@@ -19,18 +19,24 @@ Param (
   $deploymentId
 )
 
-function AddDesktopShortcut($user, $path, $exec, $args)
+function AddDesktopShortcut($user, $name, $exec, $args)
 {
     $WshShell = New-Object -comObject WScript.Shell
-    $Shortcut = $WshShell.CreateShortcut($path)
-    $Shortcut.TargetPath = $exec
-    $Shortcut.Arguments = $args
-    $Shortcut.Save()
+    $Shortcut = $WshShell.CreateShortcut("C:\Users\$user\Desktop\$name.lnk");
+    $Shortcut.TargetPath = $exec;
+    $Shortcut.Arguments = $args;
+    $Shortcut.Save();
+
+    return $shortcut;
 }
 
 function AddStartupItem($exePath)
 {
-    $ComputerConfigDestination = "$env:ALLUSERSPROFILE\Microsoft\Windows\Start Menu\Programs\StartUp"
+    $shortcut = AddDesktopShortcut "" "" "" "";
+
+    $ComputerConfigDestination = "$env:ALLUSERSPROFILE\Microsoft\Windows\Start Menu\Programs\StartUp";
+
+    copy-item -path shortcut -Destination $ComputerConfigDestination;
 
     #%SystemDrive%\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
 }
@@ -994,7 +1000,7 @@ CreateRebootTask "Setup WSL" $scriptPath
 
 AddStartupItem "C:\Program Files\Docker\Docker\Docker Desktop.exe";
 
-AddDesktopShortcut "C:\LabFiles\kubernetes-hands-on-workshop";
+AddDesktopShortcut $localusername "Workshop" "C:\LabFiles\kubernetes-hands-on-workshop";
 
 Uninstall-AzureRm
 
