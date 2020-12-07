@@ -55,8 +55,48 @@ function InstallUbuntu()
     start-sleep 30
 }
 
+function DownloadDockerImage($imageName)
+{
+	docker pull $imageName
+}
+
+#load the creds
+. C:\LabFiles\AzureCreds.ps1
+
+$userName = $AzureUserName                # READ FROM FILE
+$global:password = $AzurePassword                # READ FROM FILE
+$clientId = $TokenGeneratorClientId       # READ FROM FILE
+$global:localusername = $username
+
+Uninstall-AzureRm
+
+$uniqueId =  (Get-AzResourceGroup -Name $resourceGroupName).Tags["DeploymentId"]
+$subscriptionId = (Get-AzContext).Subscription.Id
+$subscriptionName = (Get-AzContext).Subscription.Name
+$tenantId = (Get-AzContext).Tenant.Id
+$global:logindomain = (Get-AzContext).Tenant.Id;
+
+$securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
+$cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $SecurePassword
+Connect-AzAccount -Credential $cred | Out-Null
+
 InstallWSL2
 
 InstallUbuntu
 
 SetupWSL
+
+#start docker
+start-service -Name com.docker.service
+start "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+
+#install docker images
+DownloadDockerImage "node:alpine"
+DownloadDockerImage "mcr.microsoft.com/dotnet/core/sdk:3.1-alpine"
+DownloadDockerImage "mcr.microsoft.com/dotnet/core/aspnet:3.1-alpine"
+#DownloadDockerImage "docker/desktop-kubernetes"
+
+#login to acr
+$acrname = "fabmedical$deploymentId";
+$acrCreds = Get-AzContainerRegistryCredential -ResourceGroupName $resourceGroupName -Name $acrName
+docker login $acrName.azurecr.io -u $($acrCreds.Username) -p $($acrCreds.Password)";

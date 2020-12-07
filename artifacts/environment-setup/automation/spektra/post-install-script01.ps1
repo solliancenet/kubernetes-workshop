@@ -19,19 +19,52 @@ Param (
   $deploymentId
 )
 
-function CreateRebootTask($name, $scriptPath)
+function AddDesktopShortcut($user, $path, $exec, $args)
 {
-    $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument "-NoProfile -WindowStyle Hidden -file $scriptPath"
+    param ( [string]$SourceExe, [string]$ArgumentsToSourceExe, [string]$DestinationPath )
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut($path)
+    $Shortcut.TargetPath = $exec
+    $Shortcut.Arguments = $args
+    $Shortcut.Save()
+}
+
+function AddStartupItem($exePath)
+{
+    $ComputerConfigDestination = "$env:ALLUSERSPROFILE\Microsoft\Windows\Start Menu\Programs\StartUp"
+    
+    #%SystemDrive%\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+}
+
+function CreateRebootTask($name, $scriptPath, $localPath)
+{
+  <#
+  $content = Get-content "$localPath\setup-task.ps1";
+  $content = $content.replace("{USERNAME}", $global:localusername)
+  $content = $content.replace("{PASSWORD}", $global:password)
+  $content = $content.replace("{SCRIPTPATH}", $scriptPath)
+  $content = $content.replace("{TASKNAME}", $name)
+  Set-Content "$localPath\setup-task.ps1" $content;
+
+  $credentials = New-Object System.Management.Automation.PSCredential -ArgumentList @($localusername,(ConvertTo-SecureString -String $password -AsPlainText -Force))
+  start-process "powershell.exe" -ArgumentList "-file $localPath\setup-task.ps1" -RunAs $credentials
+  #>
+
+    $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument " -file `"$scriptPath`""
     $trigger = New-ScheduledTaskTrigger -AtStartup
     $taskname = $name;
+
+    write-host "Creating task with $global:localusername and $global:password";
     
+    #doesn't work with static user due to OS level priv :(
     $params = @{
-        Action  = $action
-        Trigger = $trigger
-        TaskName = $taskname
-        User = $global:localusername
-        Password = $global:password
-    }
+      Action  = $action
+      Trigger = $trigger
+      TaskName = $taskname
+      User = "System"
+      #User = $global:localusername
+      #Password = $global:password
+  }
     
     if(Get-ScheduledTask -TaskName $params.TaskName -EA SilentlyContinue) { 
         Set-ScheduledTask @params
@@ -959,6 +992,10 @@ wevtutil set-log Microsoft-Windows-TaskScheduler/Operational /enabled:true
 
 $scriptPath = "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.ps1"
 CreateRebootTask "Setup WSL" $scriptPath
+
+AddStartupItem "C:\Program Files\Docker\Docker\Docker Desktop.exe";
+
+AddDesktopShortcut "C:\LabFiles\kubernetes-hands-on-workshop";
 
 Uninstall-AzureRm
 
