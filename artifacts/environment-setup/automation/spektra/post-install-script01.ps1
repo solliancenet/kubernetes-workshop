@@ -32,7 +32,7 @@ function AddDesktopShortcut($user, $path, $exec, $args)
 function AddStartupItem($exePath)
 {
     $ComputerConfigDestination = "$env:ALLUSERSPROFILE\Microsoft\Windows\Start Menu\Programs\StartUp"
-    
+
     #%SystemDrive%\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
 }
 
@@ -1000,6 +1000,7 @@ AddDesktopShortcut "C:\LabFiles\kubernetes-hands-on-workshop";
 Uninstall-AzureRm
 
 Connect-AzAccount -Credential $cred | Out-Null
+az login --username $username --password $password
 
 #install sql server cmdlets
 powershell.exe -c "`$user='$username'; `$pass='$password'; try { Invoke-Command -ScriptBlock { Install-Module -Name SqlServer -force } -ComputerName localhost -Credential (New-Object System.Management.Automation.PSCredential `$user,(ConvertTo-SecureString `$pass -AsPlainText -Force)) } catch { echo `$_.Exception.Message }" 
@@ -1104,6 +1105,9 @@ git config --global credential.helper wincred
 $username = $azureusername.split("@")[0];
 
 $acrname = "fabmedical$deploymentId";
+
+$aksName = "fabmedical-$deploymentId";
+az aks get-credentials --resource-group $resourcegroupName --name $aksName; 
 
 #set the ip DNS name for ingress steps.
 $ipAddress = Get-AzPublicIpAddress -resourcegroup $resourcegroupname
