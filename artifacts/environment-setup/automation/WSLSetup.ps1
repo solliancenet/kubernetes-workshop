@@ -27,17 +27,27 @@ function InstallUbuntu()
 {
     write-host "Installing Ubuntu (1604)";
     Add-AppxProvisionedPackage -Online -PackagePath C:\temp\Ubuntu1604.appx -skiplicense
+    start-sleep 10;
 
     cd 'C:\Program Files\WindowsApps\'
-    $installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu1604.exe)[0].Directory.FullName
-    $installCommand += "\Ubuntu1604.exe"
+    $installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu1604.exe)[0].Directory.FullName + "\Ubuntu1604.exe"
+
+    write-host "Starting $installCommand";
     start-process $installCommand;
+
+    start-sleep 15;
+    stop-process -name "ubuntu1604" -force
 
     write-host "Installing Ubuntu (1804)";
     Add-AppxProvisionedPackage -Online -PackagePath C:\temp\Ubuntu1804.appx -skiplicense
+    start-sleep 10;
 
     $installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu1804.exe)[0].Directory.FullName + "\Ubuntu1804.exe"
+    write-host "Starting $installCommand";
     start-process $installCommand;
+
+    start-sleep 15;
+    stop-process -name "ubuntu1804" -force
 
     #write-host "Installing Ubuntu (2004)";
     #Add-AppxProvisionedPackage -Online -PackagePath C:\temp\Ubuntu2004.appx -skiplicense
@@ -50,8 +60,10 @@ function InstallUbuntu()
 function DownloadDockerImage($imageName)
 {
     write-host "Downloading docker image [$imageName]";
+    $cmd = "C:\Program Files\Docker\Docker\resources\docker"
+    start-process $cmd -argumentlist "pull $imageName";
 
-	docker pull $imageName
+	#docker pull $imageName
 }
 
 Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -Append
@@ -102,7 +114,22 @@ while($svc.status -ne "Running")
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
-start "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+write-host "Stopping docker desktop";
+stop-process -name "docker desktop" -ea SilentlyContinue;
+
+#start "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+
+write-host "Starting docker desktop";
+$username = "wsuser"
+$password = $password
+
+$securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+$credential = New-Object System.Management.Automation.PSCredential $username, $securePassword
+Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe" -Credential $credential
+#Start-Process -FilePath "C:\Windows\System32\cmd.exe" -verb runas -ArgumentList {/c "C:\Program Files\Docker\Docker\Docker Desktop.exe"}
+
+write-host "Sleeping 15";
+start-sleep 15;
 
 #install docker images
 DownloadDockerImage "node:alpine"
@@ -119,7 +146,10 @@ DownloadDockerImage "k8s.gcr.io/kube-proxy:v1.19.3"
 $acrname = "fabmedical$deploymentId";
 $acrCreds = Get-AzContainerRegistryCredential -ResourceGroupName $resourceGroupName -Name $acrName
 
-start-process "docker" -ArgumentList "login $acrName.azurecr.io -u $($acrCreds.Username) -p $($acrCreds.Password)"
+write-host "Setting docker login to ACR [$acrName]";
+$cmd = "C:\Program Files\Docker\Docker\resources\docker"
+start-process $cmd -argumentlist "login $acrName.azurecr.io -u $($acrCreds.Username) -p $($acrCreds.Password)";
+#start-process "docker" -ArgumentList "login $acrName.azurecr.io -u $($acrCreds.Username) -p $($acrCreds.Password)"
 
 Stop-Transcript
 
