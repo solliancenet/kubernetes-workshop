@@ -1048,6 +1048,7 @@ $subscriptionName = (Get-AzContext).Subscription.Name
 $tenantId = (Get-AzContext).Tenant.Id
 $global:logindomain = (Get-AzContext).Tenant.Id;
 
+write-host "Adding AD Application"
 $app = Get-AzADApplication -DisplayName "Fabmedical App $deploymentid"
 $secret = ConvertTo-SecureString -String $azurePassword -AsPlainText -Force
 
@@ -1117,6 +1118,8 @@ az aks get-credentials --resource-group $resourcegroupName --name $aksName;
 #set the ip DNS name for ingress steps.
 $ipAddress = Get-AzPublicIpAddress -resourcegroup $resourcegroupname
 $ip = $ipAddress.IpAddress;
+
+write-host "Creating the setup script for remote build machine"
 
 #inital login...
 $script = "";
@@ -1206,9 +1209,11 @@ Start-sleep 10
 Stop-Process -Name "plink" -force;
 
 #run the script...
+write-host "Running setup script"
 Start-Process c:\labfiles\setup.bat
 
 #wait 10 minutes
+write-host "Waiting 10 mins before reboot"
 Start-sleep 600
 
 Stop-Transcript
