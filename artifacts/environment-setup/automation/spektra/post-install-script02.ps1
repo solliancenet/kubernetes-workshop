@@ -2,6 +2,24 @@
 COPYRIGHT SOLLIANCE / CHRIS GIVENS
 #>
 
+function AddShortcut($user, $path, $name, $exec, $args)
+{
+    write-host "Creating shortcut to $path"
+
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$path\$name.lnk");
+    $Shortcut.TargetPath = $exec;
+
+    if ($ags)
+    {
+        $Shortcut.Arguments = $args;
+    }
+
+    $Shortcut.Save();
+
+    return $shortcut;
+}
+
 function SetupWSL()
 {
     wsl --set-default-version 2
