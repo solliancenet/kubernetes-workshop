@@ -1019,15 +1019,11 @@ reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v Hidd
 
 wevtutil set-log Microsoft-Windows-TaskScheduler/Operational /enabled:true
 
-$scriptPath = "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.ps1"
-CreateRebootTask "Setup WSL" $scriptPath $null "SYSTEM" $null;
-CreateRebootTask "Setup WSL" $scriptPath $null "wsuser" $password;
-
 #AddStartupItem "C:\Program Files\Docker\Docker\Docker Desktop.exe";
 
-AddShortcut $global:localusername "C:\Users\$localusername\Desktop" "Workshop" "C:\LabFiles\kubernetes-hands-on-workshop" $null;
+#AddShortcut $global:localusername "C:\Users\$localusername\Desktop" "Workshop" "C:\LabFiles\kubernetes-hands-on-workshop" $null;
 AddShortcut $global:localusername "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp" "Docker Desktop" "C:\Program Files\Docker\Docker\Docker Desktop.exe" $null;
-AddShortcut $global:localusername "C:\Users\$localusername\Desktop" "WSL Setup" "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.bat" $null;
+#AddShortcut $global:localusername "C:\Users\$localusername\Desktop" "WSL Setup" "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.bat" $null;
 
 Uninstall-AzureRm
 
@@ -1041,6 +1037,10 @@ powershell.exe -c "`$user='$username'; `$pass='$password'; try { Invoke-Command 
 $rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-02" };
 $resourceGroupName = $rg.ResourceGroupName
 $deploymentId =  (Get-AzResourceGroup -Name $resourceGroupName).Tags["DeploymentId"]
+
+$scriptPath = "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\spektra\post-install-script02.ps1"
+CreateRebootTask "Setup WSL" $scriptPath $null "SYSTEM" $null;
+CreateRebootTask "Setup WSL" $scriptPath $null "labvm-$deploymentid\$localusername" $password;
 
 $ropcBodyCore = "client_id=$($clientId)&username=$($userName)&password=$($password)&grant_type=password"
 $global:ropcBodySynapse = "$($ropcBodyCore)&scope=https://dev.azuresynapse.net/.default"

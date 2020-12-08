@@ -1,3 +1,21 @@
+function AddShortcut($user, $path, $name, $exec, $args)
+{
+    write-host "Creating shortcut to $path"
+
+    $WshShell = New-Object -comObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$path\$name.lnk");
+    $Shortcut.TargetPath = $exec;
+
+    if ($ags)
+    {
+        $Shortcut.Arguments = $args;
+    }
+
+    $Shortcut.Save();
+
+    return $shortcut;
+}
+
 function SetupWSL()
 {
     wsl --set-default-version 2
@@ -67,11 +85,27 @@ function DownloadDockerImage($imageName)
 
     write-host "Downloading docker image [$imageName]";
     #$cmd = "C:\Program Files\Docker\Docker\resources\docker.exe"
-    $cmd = "C:\ProgramData\DockerDesktop\version-bin\docker"
-    start-process $cmd -argumentlist "pull $imageName" -Credential $creds -NoProfile;
+    #$cmd = "C:\ProgramData\DockerDesktop\version-bin\docker"
+    #start-process $cmd -argumentlist "pull $imageName" -Credential $creds;
 
     #docker pull $imageName
-    start-process "docker" -argumentlist "pull $imageName" -Credential $creds -NoProfile;
+    start-process "docker" -argumentlist "pull $imageName" -Credential $creds;
+}
+
+function UpdateDockerSettings($user)
+{
+    $filePath = "C:\Users\$user\AppData\Roaming\Docker\settings.json"
+    write-host "Updating docker settings [$filePath]";
+
+    $data = get-content $filePath -raw;
+
+    $json = ConvertFrom-json $data;
+
+    $json.autoStart = $true;
+    $json.kubernetesEnabled = $true;
+
+    $data = ConvertTo-Json $json;
+    Set-content $filePath $data;
 }
 
 Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -Append
@@ -82,7 +116,11 @@ Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -
 $userName = $AzureUserName                # READ FROM FILE
 $global:password = $AzurePassword                # READ FROM FILE
 $clientId = $TokenGeneratorClientId       # READ FROM FILE
-$global:localusername = $username
+$global:localusername = "wsuser"
+
+AddShortcut $global:localusername "C:\Users\$localusername\Desktop" "Workshop" "C:\LabFiles\kubernetes-hands-on-workshop" $null;
+AddShortcut $global:localusername "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp" "Docker Desktop" "C:\Program Files\Docker\Docker\Docker Desktop.exe" $null;
+AddShortcut $global:localusername "C:\Users\$localusername\Desktop" "WSL Setup" "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.bat" $null;
 
 Uninstall-AzureRm
 
@@ -101,11 +139,13 @@ $subscriptionName = (Get-AzContext).Subscription.Name
 $tenantId = (Get-AzContext).Tenant.Id
 $global:logindomain = (Get-AzContext).Tenant.Id;
 
-InstallWSL2
+#InstallWSL2
 
-InstallUbuntu
+#InstallUbuntu
 
-SetupWSL
+#SetupWSL
+
+#UpdateDockerSettings $global:localusername;
 
 #start docker
 write-host "Starting docker";
@@ -126,21 +166,36 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 #wsl --set-version docker-desktop
 
 write-host "Stopping docker desktop";
-stop-process -name "docker desktop" -force -ea SilentlyContinue;
+#stop-process -name "docker desktop" -force -ea SilentlyContinue;
 
 #start "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 
 write-host "Starting docker desktop";
-$username = "wsuser"
-$password = $password
 
 $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
-$credential = New-Object System.Management.Automation.PSCredential $username, $securePassword
-Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe" -Credential $credential
+$credential = New-Object System.Management.Automation.PSCredential "labvm-$deploymentid\$localusername", $securePassword
+Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe" -Credential $credential -LoadUserProfile
 #Start-Process -FilePath "C:\Windows\System32\cmd.exe" -verb runas -ArgumentList {/c "C:\Program Files\Docker\Docker\Docker Desktop.exe"}
 
-write-host "Sleeping 15";
-start-sleep 15;
+$proc = get-process -name com.docker.backend;
+
+if (!$proc)
+{
+    write-host "Waiting for Docker backend";
+
+    start-sleep 10;
+    $proc = get-process -name com.docker.backend;
+}
+
+$proc = get-process -name com.docker.proxy;
+
+if (!$proc)
+{
+    write-host "Waiting for Docker proxy";
+
+    start-sleep 10;
+    $proc = get-process -name com.docker.proxy;
+}
 
 #install docker images
 DownloadDockerImage "node:alpine"
@@ -154,6 +209,7 @@ DownloadDockerImage "k8s.gcr.io/kube-apiserver:v1.19.3"
 DownloadDockerImage "k8s.gcr.io/kube-proxy:v1.19.3"
 
 #setup ask
+write-host "Setting up AKS";
 $aksName = "fabmedical-$deploymentId";
 az aks get-credentials --resource-group $resourcegroupName --name $aksName; 
 
