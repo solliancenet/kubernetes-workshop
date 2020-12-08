@@ -145,7 +145,7 @@ $global:logindomain = (Get-AzContext).Tenant.Id;
 
 #SetupWSL
 
-#UpdateDockerSettings $global:localusername;
+UpdateDockerSettings $global:localusername;
 
 #start docker
 write-host "Starting docker";
