@@ -208,7 +208,8 @@ if (!$proc)
 }
 
 #wait for services to stablize
-start-sleep 15;
+write-host "Waiting a bit longer for docker to start (re-run if docker takes too long)";
+start-sleep 30;
 
 #install docker images
 DownloadDockerImage "node:alpine"
@@ -234,6 +235,8 @@ write-host "Setting docker login to ACR [$acrName]";
 $cmd = "C:\Program Files\Docker\Docker\resources\docker"
 start-process $cmd -argumentlist "login $acrName.azurecr.io -u $($acrCreds.Username) -p $($acrCreds.Password)";
 #start-process "docker" -ArgumentList "login $acrName.azurecr.io -u $($acrCreds.Username) -p $($acrCreds.Password)"
+
+kubectl config use-context docker-deskop
 
 #open VS code to the repo docs.
 cd c:\labfiles\kubernetes-hands-on-workshop
