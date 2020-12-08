@@ -1,3 +1,7 @@
+<#
+COPYRIGHT SOLLIANCE / CHRIS GIVENS
+#>
+
 Param (
   [Parameter(Mandatory = $true)]
   [string]
@@ -77,6 +81,7 @@ function CreateRebootTask($name, $scriptPath, $localPath, $user, $password)
             Trigger = $trigger
             TaskName = $taskname
             User = "System"
+            RunLevel = "Highest"
         }
     }
     else
@@ -87,6 +92,7 @@ function CreateRebootTask($name, $scriptPath, $localPath, $user, $password)
             TaskName = $taskname
             User = $user
             Password = $password
+            RunLevel = "Highest"
         }
     }
     

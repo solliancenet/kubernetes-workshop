@@ -1,3 +1,7 @@
+<#
+COPYRIGHT SOLLIANCE / CHRIS GIVENS
+#>
+
 function AddShortcut($user, $path, $name, $exec, $args)
 {
     write-host "Creating shortcut to $path"

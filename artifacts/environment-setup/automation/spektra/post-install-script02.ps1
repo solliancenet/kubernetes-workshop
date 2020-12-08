@@ -1,3 +1,7 @@
+<#
+COPYRIGHT SOLLIANCE / CHRIS GIVENS
+#>
+
 function SetupWSL()
 {
     wsl --set-default-version 2
