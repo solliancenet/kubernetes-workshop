@@ -89,6 +89,7 @@ Uninstall-AzureRm
 $securePassword = $password | ConvertTo-SecureString -AsPlainText -Force
 $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $userName, $SecurePassword
 Connect-AzAccount -Credential $cred | Out-Null
+az login --username $username --password $password
 
 $rg = Get-AzResourceGroup | Where-Object { $_.ResourceGroupName -like "*-02" };
 $resourceGroupName = $rg.ResourceGroupName
@@ -151,6 +152,10 @@ DownloadDockerImage "docker/desktop-kubernetes:kubernetes-v1.19.3-cni-v0.8.5-cri
 DownloadDockerImage "k8s.gcr.io/etcd:3.4.13-0"
 DownloadDockerImage "k8s.gcr.io/kube-apiserver:v1.19.3"
 DownloadDockerImage "k8s.gcr.io/kube-proxy:v1.19.3"
+
+#setup ask
+$aksName = "fabmedical-$deploymentId";
+az aks get-credentials --resource-group $resourcegroupName --name $aksName; 
 
 #login to acr
 $acrname = "fabmedical$deploymentId";
