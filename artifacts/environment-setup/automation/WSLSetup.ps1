@@ -207,6 +207,9 @@ if (!$proc)
     $proc = get-process -name com.docker.proxy;
 }
 
+#wait for services to stablize
+start-sleep 15;
+
 #install docker images
 DownloadDockerImage "node:alpine"
 DownloadDockerImage "mcr.microsoft.com/dotnet/core/sdk:3.1-alpine"
@@ -231,6 +234,10 @@ write-host "Setting docker login to ACR [$acrName]";
 $cmd = "C:\Program Files\Docker\Docker\resources\docker"
 start-process $cmd -argumentlist "login $acrName.azurecr.io -u $($acrCreds.Username) -p $($acrCreds.Password)";
 #start-process "docker" -ArgumentList "login $acrName.azurecr.io -u $($acrCreds.Username) -p $($acrCreds.Password)"
+
+#open VS code to the repo docs.
+cd c:\labfiles\kubernetes-hands-on-workshop
+code -n .
 
 Stop-Transcript
 
