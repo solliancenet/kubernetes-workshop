@@ -163,6 +163,12 @@ while($svc.status -ne "Running")
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
+reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f
+
+reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v Hidden /t REG_DWORD /d 0 /f
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v Hidden /t REG_DWORD /d 0 /f
+
 #wsl --set-version docker-desktop
 
 write-host "Stopping docker desktop";
