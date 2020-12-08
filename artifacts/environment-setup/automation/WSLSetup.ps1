@@ -66,7 +66,8 @@ function DownloadDockerImage($imageName)
     $creds = New-Object System.Management.Automation.PSCredential -ArgumentList @($localusername,(ConvertTo-SecureString -String $password -AsPlainText -Force))
 
     write-host "Downloading docker image [$imageName]";
-    $cmd = "C:\Program Files\Docker\Docker\resources\docker.exe"
+    #$cmd = "C:\Program Files\Docker\Docker\resources\docker.exe"
+    $cmd = "C:\ProgramData\DockerDesktop\version-bin\docker"
     start-process $cmd -argumentlist "pull $imageName" -Credential $creds -NoProfile;
 
     #docker pull $imageName
@@ -120,6 +121,8 @@ while($svc.status -ne "Running")
 }
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+
+#wsl --set-version docker-desktop
 
 write-host "Stopping docker desktop";
 stop-process -name "docker desktop" -force -ea SilentlyContinue;

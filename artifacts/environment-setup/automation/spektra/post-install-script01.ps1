@@ -1005,9 +1005,9 @@ InstallUbuntu
 
 InstallVisualStudioCode
 
-InstallVisualStudio "enterprise"
+#InstallVisualStudio "enterprise"
 
-UpdateVisualStudio "enterprise"
+#UpdateVisualStudio "enterprise"
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
@@ -1020,10 +1020,10 @@ reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v Hidd
 wevtutil set-log Microsoft-Windows-TaskScheduler/Operational /enabled:true
 
 $scriptPath = "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.ps1"
-CreateRebootTask "Setup WSL" $scriptPath "SYSTEM" $null;
-CreateRebootTask "Setup WSL" $scriptPath "wsuser" $password;
+CreateRebootTask "Setup WSL" $scriptPath $null "SYSTEM" $null;
+CreateRebootTask "Setup WSL" $scriptPath $null "wsuser" $password;
 
-AddStartupItem "C:\Program Files\Docker\Docker\Docker Desktop.exe";
+#AddStartupItem "C:\Program Files\Docker\Docker\Docker Desktop.exe";
 
 AddShortcut $global:localusername "C:\Users\$localusername\Desktop" "Workshop" "C:\LabFiles\kubernetes-hands-on-workshop" $null;
 AddShortcut $global:localusername "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp" "Docker Desktop" "C:\Program Files\Docker\Docker\Docker Desktop.exe" $null;
