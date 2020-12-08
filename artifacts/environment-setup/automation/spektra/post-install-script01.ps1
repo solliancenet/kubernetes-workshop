@@ -19,12 +19,19 @@ Param (
   $deploymentId
 )
 
-function AddDesktopShortcut($user, $name, $exec, $args)
+function AddShortcut($user, $path, $name, $exec, $args)
 {
+    write-host "Creating shortcut to $path"
+
     $WshShell = New-Object -comObject WScript.Shell
-    $Shortcut = $WshShell.CreateShortcut("C:\Users\$user\Desktop\$name.lnk");
+    $Shortcut = $WshShell.CreateShortcut("$path\$name.lnk");
     $Shortcut.TargetPath = $exec;
-    $Shortcut.Arguments = $args;
+
+    if ($ags)
+    {
+        $Shortcut.Arguments = $args;
+    }
+
     $Shortcut.Save();
 
     return $shortcut;
@@ -32,16 +39,16 @@ function AddDesktopShortcut($user, $name, $exec, $args)
 
 function AddStartupItem($exePath)
 {
-    $shortcut = AddDesktopShortcut "" "" "" "";
+    #$shortcut = AddDesktopShortcut "" "" "" "";
 
     $ComputerConfigDestination = "$env:ALLUSERSPROFILE\Microsoft\Windows\Start Menu\Programs\StartUp";
 
-    copy-item -path shortcut -Destination $ComputerConfigDestination;
+    #copy-item -path shortcut -Destination $ComputerConfigDestination;
 
     #%SystemDrive%\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
 }
 
-function CreateRebootTask($name, $scriptPath, $localPath)
+function CreateRebootTask($name, $scriptPath, $localPath, $user, $password)
 {
   <#
   $content = Get-content "$localPath\setup-task.ps1";
@@ -57,19 +64,32 @@ function CreateRebootTask($name, $scriptPath, $localPath)
 
     $action = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument " -file `"$scriptPath`""
     $trigger = New-ScheduledTaskTrigger -AtStartup
-    $taskname = $name;
+    $taskname = $name + " $user";
 
-    write-host "Creating task with $global:localusername and $global:password";
+    write-host "Creating task [$taskname] with $user and $password";
     
     #doesn't work with static user due to OS level priv :(
-    $params = @{
-      Action  = $action
-      Trigger = $trigger
-      TaskName = $taskname
-      User = "System"
-      #User = $global:localusername
-      #Password = $global:password
-  }
+
+    if ($user -eq "SYSTEM")
+    {
+        $params = @{
+            Action  = $action
+            Trigger = $trigger
+            TaskName = $taskname
+            User = "System"
+        }
+    }
+    else
+    {
+        $params = @{
+            Action  = $action
+            Trigger = $trigger
+            TaskName = $taskname
+            User = $user
+            Password = $password
+        }
+    }
+    
     
     if(Get-ScheduledTask -TaskName $params.TaskName -EA SilentlyContinue) { 
         Set-ScheduledTask @params
@@ -991,16 +1011,23 @@ UpdateVisualStudio "enterprise"
 
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
+reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f
 reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v HideFileExt /t REG_DWORD /d 0 /f
+
+reg add HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v Hidden /t REG_DWORD /d 0 /f
+reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v Hidden /t REG_DWORD /d 0 /f
 
 wevtutil set-log Microsoft-Windows-TaskScheduler/Operational /enabled:true
 
 $scriptPath = "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.ps1"
-CreateRebootTask "Setup WSL" $scriptPath
+CreateRebootTask "Setup WSL" $scriptPath "SYSTEM" $null;
+CreateRebootTask "Setup WSL" $scriptPath "wsuser" $password;
 
 AddStartupItem "C:\Program Files\Docker\Docker\Docker Desktop.exe";
 
-AddDesktopShortcut $localusername "Workshop" "C:\LabFiles\kubernetes-hands-on-workshop";
+AddShortcut $global:localusername "C:\Users\$localusername\Desktop" "Workshop" "C:\LabFiles\kubernetes-hands-on-workshop" $null;
+AddShortcut $global:localusername "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp" "Docker Desktop" "C:\Program Files\Docker\Docker\Docker Desktop.exe" $null;
+AddShortcut $global:localusername "C:\Users\$localusername\Desktop" "WSL Setup" "C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.bat" $null;
 
 Uninstall-AzureRm
 

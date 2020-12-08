@@ -1,0 +1,1 @@
+powershell -file C:\LabFiles\kubernetes-workshop\artifacts\environment-setup\automation\WSLSetup.ps1
