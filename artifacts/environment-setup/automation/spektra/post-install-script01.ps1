@@ -86,7 +86,7 @@ InstallWSL2
 
 InstallDockerDesktop
 
-InstallUbuntu
+DownloadUbuntu
 
 InstallVisualStudioCode
 

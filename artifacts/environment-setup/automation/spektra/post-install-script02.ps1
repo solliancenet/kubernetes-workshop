@@ -2,107 +2,13 @@
 COPYRIGHT SOLLIANCE / CHRIS GIVENS
 #>
 
-function AddShortcut($user, $path, $name, $exec, $args)
-{
-    write-host "Creating shortcut to $path"
-
-    $WshShell = New-Object -comObject WScript.Shell
-    $Shortcut = $WshShell.CreateShortcut("$path\$name.lnk");
-    $Shortcut.TargetPath = $exec;
-
-    if ($ags)
-    {
-        $Shortcut.Arguments = $args;
-    }
-
-    $Shortcut.Save();
-
-    return $shortcut;
-}
-
-function SetupWSL()
-{
-    wsl --set-default-version 2
-    wsl --set-version Ubuntu-18.04 2
-    wsl --list -v
-}
-
-function InstallWSL2
-{
-    write-host "Installing WSL2";
-
-    mkdir c:\temp -ea silentlycontinue
-    cd c:\temp
-    
-    $downloadNotePad = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi";
-
-    #download it...		
-    Start-BitsTransfer -Source $DownloadNotePad -DisplayName Notepad -Destination "wsl_update_x64.msi"
-
-    $credentials = New-Object System.Management.Automation.PSCredential -ArgumentList @($localusername,(ConvertTo-SecureString -String $password -AsPlainText -Force))
-
-    #Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet' -Credential $credentials
-    Start-Process msiexec.exe -Wait -ArgumentList '/I C:\temp\wsl_update_x64.msi /quiet'
-}
-
-function InstallUbuntu()
-{
-    write-host "Installing Ubuntu (1604)";
-    $app = Add-AppxProvisionedPackage -Online -PackagePath C:\temp\Ubuntu1604.appx -skiplicense
-    start-sleep 10;
-
-    cd 'C:\Program Files\WindowsApps\'
-
-    if ($app.Online)
-    {
-        $installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu1604.exe)[0].Directory.FullName + "\Ubuntu1604.exe"
-
-        write-host "Starting $installCommand";
-        start-process $installCommand;
-        start-sleep 20;
-        stop-process -name "ubuntu1604" -force
-    }
-
-    write-host "Installing Ubuntu (1804)";
-    $app = Add-AppxProvisionedPackage -Online -PackagePath C:\temp\Ubuntu1804.appx -skiplicense
-    start-sleep 10;
-
-    if ($app.Online)
-    {
-        $installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu1804.exe)[0].Directory.FullName + "\Ubuntu1804.exe"
-        write-host "Starting $installCommand";
-        start-process $installCommand;
-
-        start-sleep 20;
-        stop-process -name "ubuntu1804" -force
-    }
-
-    #write-host "Installing Ubuntu (2004)";
-    #Add-AppxProvisionedPackage -Online -PackagePath C:\temp\Ubuntu2004.appx -skiplicense
-    #$installCommand = (Get-ChildItem -Path ".\" -Recurse ubuntu2004.exe)[0].Directory.FullName + "\Ubuntu2004.exe"
-    #start-process $installCommand;
-}
-
-function UpdateDockerSettings($user)
-{
-    $filePath = "C:\Users\$user\AppData\Roaming\Docker\settings.json"
-    write-host "Updating docker settings [$filePath]";
-
-    $data = get-content $filePath -raw;
-
-    $json = ConvertFrom-json $data;
-
-    $json.autoStart = $true;
-    $json.kubernetesEnabled = $true;
-
-    $data = ConvertTo-Json $json;
-    Set-content $filePath $data;
-}
-
 Start-Transcript -Path C:\WindowsAzure\Logs\CloudLabsCustomScriptExtension.txt -Append
 
 #load the creds
 . C:\LabFiles\AzureCreds.ps1
+
+#run the solliance package
+. C:\LabFiles\Common.ps1
 
 $userName = $AzureUserName                # READ FROM FILE
 $global:password = $AzurePassword                # READ FROM FILE
