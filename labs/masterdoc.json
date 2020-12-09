@@ -1,24 +1,31 @@
 [
-    {
-      "Name": "Virutal Devintersection - Cloud Native Workshop",
-      "Language": "English",
-      "Files": [
-        {
-          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/microservice-workshop/master/labs/README.md",
-          "Order": 1
-        },
-        {
-          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/microservice-workshop/master/labs/01_Lab01.md",
-          "Order": 2
-        },
-        {
-          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/microservice-workshop/master/labs/01_Lab02.md",
-          "Order": 3
-        }     ,
-        {
-          "RawFilePath": "https://raw.githubusercontent.com/solliancenet/microservice-workshop/master/labs/01_Lab03.md",
-          "Order": 4
-        }
-      ]
-    }
-  ]
+  {
+    "Name": "Virutal DevIntersection - Kubernetes Hands-On",
+    "Language": "English",
+    "Files": [
+      {"Order":1, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/Solliance.md"},
+      {"Order":2, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/00-Install/Solliance.md"},
+      {"Order":3, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/01-Welcome-to-Docker/README.md"},
+      {"Order":4, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/02-Hello-Docker/start/README.md"},
+      {"Order":5, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/03-Multi-stage-build/start/README.md"},
+      {"Order":6, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/04-A-bigger-site/start/README.md"},
+      {"Order":7, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/05-Welcome-to-Kubernetes/README.md"},
+      {"Order":8, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/06-Hello-Kubernetes/start/README.md"},
+      {"Order":9, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/07-Deployment/start/README.md"},
+      {"Order":10, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/08-Service/start/README.md"},
+      {"Order":11, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/09-Delete/README.md"},
+      {"Order":12, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/10-A-bigger-site/start/README.md"},
+      {"Order":13, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/11-Rolling-update/README.md"},
+      {"Order":14, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/12-Storing-Secrets/README.md"},
+      {"Order":15, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/13-Docker-Hub/README.md"},
+      {"Order":16, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/14-Choosing-a-cloud/README.md"},
+      {"Order":17, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/15-Install-Azure-Kubernetes-Service/Solliance.md"},
+      {"Order":18, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/16-Azure-Container-Registry/README.md"},
+      {"Order":19, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/17-Azure-Kubernetes-Service/start/README.md"},
+      {"Order":20, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/18-Azure-Rolling-Update/README.md"},
+      {"Order":21, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/19-Bonus/README.md"},
+      {"Order":22, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/20-Software-Architecture-for-the-Cloud/README.md"},
+      {"Order":23, "RawFilePath": "https://github.com/robrich/kubernetes-hands-on-workshop/blob/main/21-Kubernetes-best-practices/README.md"}
+    ]
+  }
+]
